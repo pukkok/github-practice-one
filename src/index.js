@@ -9,7 +9,6 @@ canvas.height = window.innerHeight
 const ctx = canvas.getContext('2d')
 
 const size = 40
-
 function drawRect(note, color='cadetblue') {
     const { x, y, size, noteName } = note
     const centerX = x - size / 2
@@ -24,10 +23,11 @@ function drawRect(note, color='cadetblue') {
     ctx.fillText(noteName, x, y)
 }
 
-const startPoint = canvas.width / 2 - notes.length / 2 * (size + 10)
+const gap = 10
+const startPoint = canvas.width / 2 - notes.length / 2 * (size + gap)
 notes.forEach((note, idx) => {
     const newNote = {
-        x : startPoint + idx * (size + 10),
+        x : startPoint + idx * (size + gap),
         y : canvas.height / 2,
         size: size,
         pitch : note.pitch,
