@@ -23,8 +23,8 @@ playBtn.addEventListener('click', () => {
       const item = createdItems[idx]
       currentNote = piano.play(item.pitch) // 새 음 재생
       idx++
-      
-      setTimeout(playNextNote, 1000)
+      const delay = item.tempo * 1000
+      setTimeout(playNextNote, delay)
     }
 
     setTimeout(playNextNote, 500) // 처음 0.5초 딜레이
