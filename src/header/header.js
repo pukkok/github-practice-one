@@ -28,7 +28,7 @@ playBtn.addEventListener('click', () => {
     }
 
     setTimeout(playNextNote, 500) // 처음 0.5초 딜레이
-    // playNextNote() // 첫 음 재생 시작
+
   })
 })
 

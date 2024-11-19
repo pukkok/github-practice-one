@@ -1,12 +1,13 @@
 import notes from "./data/notes.js"
 import drawRect from "./soundBlock.js"
 import header from "./header/header.js"
+import footer from './footer/footer.js'
 import createdItems from "./state.js"
 
 const root = document.getElementById("root")
 
 const canvas = document.createElement("canvas")
-root.append(header, canvas)
+root.append(header, canvas, footer)
 
 canvas.width = window.innerWidth
 canvas.height = window.innerHeight
