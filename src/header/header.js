@@ -8,14 +8,27 @@ header.appendChild(playBtn)
 playBtn.addEventListener('click', () => {
   const ac = new AudioContext()
   // 악기 로드
-  Soundfont.instrument(ac, 'acoustic_grand_piano').then((piano) => {
-    // 특정 음을 재생
-    console.log(createdItems)
+  Soundfont.instrument(ac, "acoustic_grand_piano").then((piano) => {
+    let idx = 0 // 재생할 음의 인덱스
+    let currentNote = null
 
-    createdItems.forEach(item => {
-      piano.play(item.pitch)
-    })
-    
+    function playNextNote() {
+      // 이전 음을 멈춤
+      if (currentNote) {
+        currentNote.stop()
+      }
+
+      if (idx >= createdItems.length) return
+
+      const item = createdItems[idx]
+      currentNote = piano.play(item.pitch) // 새 음 재생
+      idx++
+      
+      setTimeout(playNextNote, 1000)
+    }
+
+    setTimeout(playNextNote, 500) // 처음 0.5초 딜레이
+    // playNextNote() // 첫 음 재생 시작
   })
 })
 
