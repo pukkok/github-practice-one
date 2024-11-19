@@ -1,11 +1,12 @@
-import notes from "./notes.js"
+import notes from "./data/notes.js"
 import drawRect from "./soundBlock.js"
+import header from "./header/header.js"
+import createdItems from "./state.js"
 
 const root = document.getElementById("root")
 
-
 const canvas = document.createElement("canvas")
-root.append(canvas)
+root.append(header, canvas)
 
 canvas.width = window.innerWidth
 canvas.height = window.innerHeight
@@ -14,7 +15,7 @@ const ctx = canvas.getContext("2d")
 const size = 40
 const gap = 10
 const startPoint = canvas.width / 2 - (notes.length / 2) * (size + gap)
-const createdItems = [] // 새로 생성된 박스들을 관리하는 배열
+// const createdItems = [] // 새로 생성된 박스들을 관리하는 배열
 let draggingItem = null // 현재 드래그 중인 아이템
 let offset = { x: 0, y: 0 } // 드래그 위치와 아이템 중심의 차이
 
@@ -79,19 +80,7 @@ canvas.addEventListener("mouseup", () => {
   }
 })
 
-const ac = new AudioContext()
-// 악기 로드
-Soundfont.instrument(ac, 'acoustic_grand_piano').then((piano) => {
-  // 특정 음을 재생
-  canvas.addEventListener('click', (e) => {
-    createdItems.forEach(item => {
-      piano.play(item.pitch)
-    })
-  })
-  // piano.play('D4')
-  // 특정 시간 후 멈추기
-  // setTimeout(() => piano.stop(), 2000);
-})
+
 
 // 초기 그리기
 redraw()
