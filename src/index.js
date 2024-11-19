@@ -2,6 +2,8 @@ import notes from "./notes.js"
 import drawRect from "./soundBlock.js"
 
 const root = document.getElementById("root")
+
+
 const canvas = document.createElement("canvas")
 root.append(canvas)
 
@@ -75,6 +77,20 @@ canvas.addEventListener("mouseup", () => {
     draggingItem = null // 드래그 상태 초기화
     redraw()
   }
+})
+
+const ac = new AudioContext()
+// 악기 로드
+Soundfont.instrument(ac, 'acoustic_grand_piano').then((piano) => {
+  // 특정 음을 재생
+  canvas.addEventListener('click', (e) => {
+    createdItems.forEach(item => {
+      piano.play(item.pitch)
+    })
+  })
+  // piano.play('D4')
+  // 특정 시간 후 멈추기
+  // setTimeout(() => piano.stop(), 2000);
 })
 
 // 초기 그리기
