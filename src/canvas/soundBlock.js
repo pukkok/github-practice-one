@@ -11,7 +11,7 @@ function soundBlock(ctx, note, color='cadetblue') {
     const centerX = x - size / 2
     const centerY = y - size / 2
     ctx.fillStyle = color
-    ctx.fillRect(centerX, centerY, size, size)
+    ctx.fillRect(centerX, centerY, size, 40)
     
     ctx.fillStyle = '#fff'
     ctx.font = '20px sans-serif'
