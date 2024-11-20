@@ -20,7 +20,7 @@ const notes = [
     { color: "#0000FF", pitch: "G4", koreanName: "솔", englishName: "Sol" },
     { color: "#4B0082", pitch: "A4", koreanName: "라", englishName: "La" },
     { color: "#8A2BE2", pitch: "B4", koreanName: "시", englishName: "Si" },
-    { color: "#FF0000", pitch: "C5", koreanName: "도", englishName: "Do" },
+    // { color: "#FF0000", pitch: "C5", koreanName: "도", englishName: "Do" },
     // { color: "#FF7F00", pitch: "D5", koreanName: "레", englishName: "Re" },
     // { color: "#FFFF00", pitch: "E5", koreanName: "미", englishName: "Mi" },
     // { color: "#00FF00", pitch: "F5", koreanName: "파", englishName: "Fa" },
