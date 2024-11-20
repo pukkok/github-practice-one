@@ -1,5 +1,4 @@
-
-function drawBlock(ctx, note, color='cadetblue') {
+function soundBlock(ctx, note, color='cadetblue') {
     const { x, y, size, noteName } = note
     const centerX = x - size / 2
     const centerY = y - size / 2
@@ -13,4 +12,4 @@ function drawBlock(ctx, note, color='cadetblue') {
     ctx.fillText(noteName, x, y)
 }
 
-export default drawBlock
+export default soundBlock
