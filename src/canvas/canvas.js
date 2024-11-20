@@ -1,6 +1,6 @@
 import notes from "../data/notes.js"
 import createdItems from "../state/createdItems.js"
-import drawRect from "./soundBlock.js"
+import drawBlock from "./soundBlock.js"
 const canvas = document.createElement("canvas")
 
 canvas.width = window.innerWidth > 800 ? 800 : window.innerWidth
@@ -17,7 +17,7 @@ let offset = { x: 0, y: 0 } // 드래그 위치와 아이템 중심의 차이
 let selectedItem = null
 
 // 드래그 가능한 영역
-const dropArea = { x: 0, y: 90, width: canvas.width, height: canvas.width / 10 }
+const dropArea = { x: 0, y: 0, width: canvas.width, height: canvas.width / 10 }
 
 // 초기 박스들
 const initialBoxes = notes.map((note, idx) => ({
@@ -34,7 +34,7 @@ const initialBoxes = notes.map((note, idx) => ({
 function redraw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   [...initialBoxes, ...createdItems].forEach((note) =>
-    drawRect(ctx, note, note.color)
+    drawBlock(ctx, note, note.color)
   )
 
   drawLine()
@@ -58,7 +58,7 @@ function isInsideDropArea(item) {
 }
 
 // 드래그 시작
-canvas.addEventListener("mousedown", (e) => {
+canvas.addEventListener('mousedown', (e) => {
   const { offsetX, offsetY } = e
   const clickedBox = [...initialBoxes, ...createdItems].find(
     (note) =>
@@ -76,27 +76,27 @@ canvas.addEventListener("mousedown", (e) => {
     }
     offset = { x: offsetX - clickedBox.x, y: offsetY - clickedBox.y }
   }
-})
+}) 
 
 // 드래그 중
-canvas.addEventListener("mousemove", (e) => {
+canvas.addEventListener('mousemove', (e) => {
   if (draggingItem) {
     const { offsetX, offsetY } = e
     draggingItem.x = offsetX - offset.x
     draggingItem.y = offsetY - offset.y
     redraw()
-    drawRect(ctx, draggingItem, draggingItem.color) // 현재 드래그 중인 박스 그리기
+    drawBlock(ctx, draggingItem, draggingItem.color) // 현재 드래그 중인 박스 그리기
   }
 })
 
 // 드래그 종료
-canvas.addEventListener("mouseup", () => {
+canvas.addEventListener('mouseup', () => { 
   if (draggingItem) {
     if (isInsideDropArea(draggingItem)) {
       // 드롭 영역 안에 있을 경우, 위치 고정
-      const slotWidth = dropArea.width / 12 // 드롭 영역의 12칸
-      const index = Math.floor(draggingItem.x / slotWidth)
-      draggingItem.x = index * slotWidth + slotWidth / 2
+      const slotWidth = dropArea.width / 16 // 드롭 영역의 20칸
+      const idx = Math.floor(draggingItem.x / slotWidth)
+      draggingItem.x = idx * slotWidth + slotWidth / 2
       draggingItem.y = dropArea.y + dropArea.height / 2
 
       // 배열에 추가
@@ -119,8 +119,16 @@ canvas.addEventListener("mouseup", () => {
 })
 
 // 아이템 선택
-canvas.addEventListener("click", (e) => {
+canvas.addEventListener("dblclick", (e) => {
   const { offsetX, offsetY } = e
+  const selectedFixedItem = [...initialBoxes].find(
+    (note) => 
+      offsetX >= note.x - note.size / 2 &&
+      offsetX <= note.x + note.size / 2 &&
+      offsetY >= note.y - note.size / 2 &&
+      offsetY <= note.y + note.size / 2
+  )
+
   selectedItem = [...createdItems].find(
     (note) =>
       offsetX >= note.x - note.size / 2 &&
@@ -128,6 +136,15 @@ canvas.addEventListener("click", (e) => {
       offsetY >= note.y - note.size / 2 &&
       offsetY <= note.y + note.size / 2
   )
+
+  if(selectedFixedItem) {
+    const ac = new AudioContext()
+    Soundfont.instrument(ac, "acoustic_grand_piano").then((piano) => {
+      const playNote = piano.play(selectedFixedItem.pitch)
+      setTimeout(playNote.stop, 500)
+    })
+
+  }
 
   if (selectedItem) {
     const newTempo = prompt(
