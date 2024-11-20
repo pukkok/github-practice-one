@@ -1,4 +1,4 @@
-import createdItems from "../state.js"
+import createdItems from "../state/createdItems.js"
 
 const header = document.createElement('header')
 const playBtn = document.createElement('button')
