@@ -1,12 +1,14 @@
 import notes from "../data/notes.js"
 import createdItems from "../state/createdItems.js"
-import drawBlock from "./soundBlock.js"
-const canvas = document.createElement("canvas")
+import dropBlockArea from "./dropBlockArea.js"
+import soundBlock from "./soundBlock.js"
+import isInsideDropArea from "./isInsideDropArea.js"
+import findClickedBlock from "./findClickedBlock.js"
 
+const canvas = document.createElement("canvas")
+const ctx = canvas.getContext("2d")
 canvas.width = window.innerWidth > 800 ? 800 : window.innerWidth
 canvas.height = window.innerHeight - 130
-
-const ctx = canvas.getContext("2d")
 
 const size = 40
 const gap = 10
@@ -15,6 +17,7 @@ const startPoint = canvas.width / 2 - (notes.length / 2) * (size + gap)
 let draggingItem = null // 현재 드래그 중인 아이템
 let offset = { x: 0, y: 0 } // 드래그 위치와 아이템 중심의 차이
 let selectedItem = null
+let isPlayFixedNote = false
 
 // 드래그 가능한 영역
 const dropArea = { x: 0, y: 0, width: canvas.width, height: canvas.width / 10 }
@@ -34,49 +37,28 @@ const initialBoxes = notes.map((note, idx) => ({
 function redraw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   [...initialBoxes, ...createdItems].forEach((note) =>
-    drawBlock(ctx, note, note.color)
+    soundBlock(ctx, note, note.color)
   )
-
-  drawLine()
+  dropBlockArea(ctx, dropArea)
 }
 
-// 드롭 영역 그리기
-function drawLine() {
-  ctx.strokeStyle = "#999"
-  ctx.lineWidth = 2
-  ctx.strokeRect(dropArea.x, dropArea.y, dropArea.width, dropArea.height)
-}
 
-// 드롭 영역 내부 확인 함수
-function isInsideDropArea(item) {
-  return (
-    item.x >= dropArea.x &&
-    item.x <= dropArea.x + dropArea.width &&
-    item.y >= dropArea.y &&
-    item.y <= dropArea.y + dropArea.height
-  )
-}
+
 
 // 드래그 시작
 canvas.addEventListener('mousedown', (e) => {
   const { offsetX, offsetY } = e
-  const clickedBox = [...initialBoxes, ...createdItems].find(
-    (note) =>
-      offsetX >= note.x - note.size / 2 &&
-      offsetX <= note.x + note.size / 2 &&
-      offsetY >= note.y - note.size / 2 &&
-      offsetY <= note.y + note.size / 2
-  )
+  const clickedBlock = findClickedBlock([...initialBoxes, ...createdItems], offsetX, offsetY)
 
-  if (clickedBox) {
-    if (clickedBox.fixed) {
-      draggingItem = { ...clickedBox, fixed: false, tempo: 0.5 } // 새 박스를 생성
+  if (clickedBlock) {
+    if (clickedBlock.fixed) {
+      draggingItem = { ...clickedBlock, fixed: false, tempo: 0.5 } // 새 박스를 생성
     } else {
-      draggingItem = clickedBox // 기존 박스를 이동
+      draggingItem = clickedBlock // 기존 박스를 이동
     }
-    offset = { x: offsetX - clickedBox.x, y: offsetY - clickedBox.y }
+    offset = { x: offsetX - clickedBlock.x, y: offsetY - clickedBlock.y }
   }
-}) 
+})
 
 // 드래그 중
 canvas.addEventListener('mousemove', (e) => {
@@ -85,14 +67,14 @@ canvas.addEventListener('mousemove', (e) => {
     draggingItem.x = offsetX - offset.x
     draggingItem.y = offsetY - offset.y
     redraw()
-    drawBlock(ctx, draggingItem, draggingItem.color) // 현재 드래그 중인 박스 그리기
+    soundBlock(ctx, draggingItem, draggingItem.color) // 현재 드래그 중인 박스 그리기
   }
 })
 
 // 드래그 종료
 canvas.addEventListener('mouseup', () => { 
   if (draggingItem) {
-    if (isInsideDropArea(draggingItem)) {
+    if (isInsideDropArea(draggingItem, dropArea)) {
       // 드롭 영역 안에 있을 경우, 위치 고정
       const slotWidth = dropArea.width / 16 // 드롭 영역의 20칸
       const idx = Math.floor(draggingItem.x / slotWidth)
@@ -121,29 +103,22 @@ canvas.addEventListener('mouseup', () => {
 // 아이템 선택
 canvas.addEventListener("dblclick", (e) => {
   const { offsetX, offsetY } = e
-  const selectedFixedItem = [...initialBoxes].find(
-    (note) => 
-      offsetX >= note.x - note.size / 2 &&
-      offsetX <= note.x + note.size / 2 &&
-      offsetY >= note.y - note.size / 2 &&
-      offsetY <= note.y + note.size / 2
-  )
+  const selectedFixedItem = findClickedBlock([...initialBoxes], offsetX, offsetY)
 
-  selectedItem = [...createdItems].find(
-    (note) =>
-      offsetX >= note.x - note.size / 2 &&
-      offsetX <= note.x + note.size / 2 &&
-      offsetY >= note.y - note.size / 2 &&
-      offsetY <= note.y + note.size / 2
-  )
+  selectedItem = findClickedBlock([...createdItems], offsetX, offsetY)
 
   if(selectedFixedItem) {
-    const ac = new AudioContext()
-    Soundfont.instrument(ac, "acoustic_grand_piano").then((piano) => {
-      const playNote = piano.play(selectedFixedItem.pitch)
-      setTimeout(playNote.stop, 500)
-    })
-
+    // isPlayFixedNote = true
+    // if(isPlayFixedNote) {
+    //   const ac = new AudioContext()
+    //   Soundfont.instrument(ac, "acoustic_grand_piano").then((piano) => {
+    //     const playNote = piano.play(selectedFixedItem.pitch)
+    //     setTimeout(() => {
+    //       playNote.stop()
+    //       isPlayFixedNote = false
+    //     }, 1000)
+    //   })
+    // }
   }
 
   if (selectedItem) {
