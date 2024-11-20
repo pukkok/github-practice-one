@@ -1,3 +1,4 @@
+import getAudioContext from "../state/audioContext.js"
 import createdItems from "../state/createdItems.js"
 
 const header = document.createElement('header')
@@ -6,7 +7,7 @@ playBtn.innerText = '시작'
 header.appendChild(playBtn)
 
 playBtn.addEventListener('click', () => {
-  const ac = new AudioContext()
+  const ac = getAudioContext()
   // 악기 로드
   Soundfont.instrument(ac, "acoustic_grand_piano").then((piano) => {
     let idx = 0 // 재생할 음의 인덱스

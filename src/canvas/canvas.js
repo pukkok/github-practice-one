@@ -4,6 +4,7 @@ import soundBlock from "./soundBlock.js"
 import dropBlockArea from "./dropBlockArea.js"
 import isInsideDropArea from "./isInsideDropArea.js"
 import findClickedBlock from "./findClickedBlock.js"
+import getAudioContext from "../state/audioContext.js"
 
 const canvas = document.createElement("canvas")
 const ctx = canvas.getContext("2d")
@@ -31,6 +32,7 @@ const initialBoxes = notes.map((note, idx) => ({
   noteName: note.koreanName,
   color: note.color,
   fixed: true, // 초기 박스는 고정
+  keySignature : null // 조표 #, b
 }))
 
 // 모든 박스를 다시 그리기
@@ -107,7 +109,7 @@ canvas.addEventListener("dblclick", (e) => {
   if(selectedFixedItem) {
     isPlayFixedNote = true
     if(isPlayFixedNote) {
-      const ac = new AudioContext()
+      const ac = getAudioContext()
       Soundfont.instrument(ac, "acoustic_grand_piano").then((piano) => {
         const playNote = piano.play(selectedFixedItem.pitch)
         setTimeout(() => {
