@@ -1,7 +1,7 @@
 import notes from "../data/notes.js"
 import createdItems from "../state/createdItems.js"
-import dropBlockArea from "./dropBlockArea.js"
 import soundBlock from "./soundBlock.js"
+import dropBlockArea from "./dropBlockArea.js"
 import isInsideDropArea from "./isInsideDropArea.js"
 import findClickedBlock from "./findClickedBlock.js"
 
@@ -41,9 +41,6 @@ function redraw() {
   )
   dropBlockArea(ctx, dropArea)
 }
-
-
-
 
 // 드래그 시작
 canvas.addEventListener('mousedown', (e) => {
@@ -108,17 +105,17 @@ canvas.addEventListener("dblclick", (e) => {
   selectedItem = findClickedBlock([...createdItems], offsetX, offsetY)
 
   if(selectedFixedItem) {
-    // isPlayFixedNote = true
-    // if(isPlayFixedNote) {
-    //   const ac = new AudioContext()
-    //   Soundfont.instrument(ac, "acoustic_grand_piano").then((piano) => {
-    //     const playNote = piano.play(selectedFixedItem.pitch)
-    //     setTimeout(() => {
-    //       playNote.stop()
-    //       isPlayFixedNote = false
-    //     }, 1000)
-    //   })
-    // }
+    isPlayFixedNote = true
+    if(isPlayFixedNote) {
+      const ac = new AudioContext()
+      Soundfont.instrument(ac, "acoustic_grand_piano").then((piano) => {
+        const playNote = piano.play(selectedFixedItem.pitch)
+        setTimeout(() => {
+          isPlayFixedNote = false
+          playNote.stop()
+        }, 1000)
+      })
+    } 
   }
 
   if (selectedItem) {
