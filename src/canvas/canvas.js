@@ -5,6 +5,7 @@ import dropBlockArea from "./dropBlockArea.js"
 import isInsideDropArea from "./isInsideDropArea.js"
 import findClickedBlock from "./findClickedBlock.js"
 import getAudioContext from "../state/audioContext.js"
+import drawTriangle from "./drawTriangle.js"
 
 const canvas = document.createElement("canvas")
 const ctx = canvas.getContext("2d")
@@ -15,12 +16,11 @@ const size = 40
 const gap = 10
 const startPoint = canvas.width / 2 - (notes.length / 2) * (size + gap)
 
-let draggingItem = null // 현재 드래그 중인 아이템
-let offset = { x: 0, y: 0 } // 드래그 위치와 아이템 중심의 차이
+let draggingItem = null
+let offset = { x: 0, y: 0 }
 let selectedItem = null
 let isPlayFixedNote = false
 
-// 드래그 가능한 영역
 const dropArea = { x: 0, y: 0, width: canvas.width, height: canvas.width / 10 }
 
 // 초기 박스들
@@ -31,80 +31,80 @@ const initialBoxes = notes.map((note, idx) => ({
   pitch: note.pitch,
   noteName: note.koreanName,
   color: note.color,
-  fixed: true, // 초기 박스는 고정
-  keySignature : null // 조표 #, b
+  fixed: true,
+  keySignature: null,
 }))
 
 // 모든 박스를 다시 그리기
 function redraw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  [...initialBoxes, ...createdItems].forEach((note) =>
-    soundBlock(ctx, note, note.color)
-  )
+  [...initialBoxes, ...createdItems].forEach((note) => soundBlock(ctx, note, note.color))
   dropBlockArea(ctx, dropArea)
+
+  // 삼각형 표시
+  createdItems.forEach((note) => {
+    if (note.isResizing) {
+      drawTriangle(ctx, note.x + note.size / 2 + 10, note.y + 25, "right")
+      drawTriangle(ctx, note.x - note.size / 2 - 10, note.y + 25, "left")
+    }
+  })
 }
 
 // 드래그 시작
-canvas.addEventListener('mousedown', (e) => {
+canvas.addEventListener("mousedown", (e) => {
   const { offsetX, offsetY } = e
   const clickedBlock = findClickedBlock([...initialBoxes, ...createdItems], offsetX, offsetY)
 
   if (clickedBlock) {
     if (clickedBlock.fixed) {
-      draggingItem = { ...clickedBlock, fixed: false, tempo: 0.5 } // 새 박스를 생성
+      draggingItem = { ...clickedBlock, fixed: false, tempo: 0.5 }
     } else {
-      draggingItem = clickedBlock // 기존 박스를 이동
+      draggingItem = clickedBlock
     }
     offset = { x: offsetX - clickedBlock.x, y: offsetY - clickedBlock.y }
   }
 })
 
 // 드래그 중
-canvas.addEventListener('mousemove', (e) => {
+canvas.addEventListener("mousemove", (e) => {
   if (draggingItem) {
     const { offsetX, offsetY } = e
     draggingItem.x = offsetX - offset.x
     draggingItem.y = offsetY - offset.y
     redraw()
-    soundBlock(ctx, draggingItem, draggingItem.color) // 현재 드래그 중인 박스 그리기
+    soundBlock(ctx, draggingItem, draggingItem.color)
   }
 })
 
 // 드래그 종료
-canvas.addEventListener('mouseup', () => { 
+canvas.addEventListener("mouseup", () => {
   if (draggingItem) {
     if (isInsideDropArea(draggingItem, dropArea)) {
-      // 드롭 영역 안에 있을 경우, 위치 고정
-      const slotWidth = dropArea.width / 16 // 드롭 영역의 20칸
+      const slotWidth = dropArea.width / 16
       const idx = Math.floor(draggingItem.x / slotWidth)
       draggingItem.x = idx * slotWidth + slotWidth / 2
       draggingItem.y = dropArea.y + dropArea.height / 2
 
-      // 배열에 추가
       if (!createdItems.includes(draggingItem)) {
         createdItems.push(draggingItem)
       }
 
-      // 배열 순서 정렬
       createdItems.sort((a, b) => a.x - b.x)
     } else {
-      // 드롭 영역 밖으로 드롭하면 삭제
-      if (createdItems.includes(draggingItem)) {
-        createdItems.splice(createdItems.indexOf(draggingItem), 1)
-      }
+      const index = createdItems.indexOf(draggingItem)
+      if (index > -1) createdItems.splice(index, 1)
     }
 
-    draggingItem = null // 드래그 상태 초기화
+    draggingItem = null
     redraw()
   }
 })
 
-// 아이템 선택
+// 더블클릭으로 크기 조정 활성화
 canvas.addEventListener("dblclick", (e) => {
   const { offsetX, offsetY } = e
+  
   const selectedFixedItem = findClickedBlock([...initialBoxes], offsetX, offsetY)
-
-  selectedItem = findClickedBlock([...createdItems], offsetX, offsetY)
 
   if(selectedFixedItem) {
     isPlayFixedNote = true
@@ -119,16 +119,49 @@ canvas.addEventListener("dblclick", (e) => {
       })
     } 
   }
+  
+  const clickedBlock = findClickedBlock([...createdItems], offsetX, offsetY)
 
-  if (selectedItem) {
-    const newTempo = prompt(
-      `현재 박자: ${selectedItem.tempo || "미설정"}박\n새로운 박자를 입력하세요`
-    )
-
-    if (newTempo && !isNaN(newTempo)) {
-      selectedItem.tempo = newTempo
-    }
+  if (clickedBlock) {
+    clickedBlock.isResizing = !clickedBlock.isResizing
+    createdItems.forEach((item) => {
+      if (item !== clickedBlock) item.isResizing = false
+    })
+    redraw()
   }
+})
+
+// 삼각형 클릭으로 크기 조정
+canvas.addEventListener("click", (e) => {
+  const { offsetX, offsetY } = e
+
+  createdItems.forEach((block) => {
+    if (block.isResizing) {
+      // 왼쪽 삼각형 클릭
+      if (
+        offsetX > block.x - block.size / 2 - 20 &&
+        offsetX < block.x - block.size / 2 &&
+        offsetY > block.y + 15 &&
+        offsetY < block.y + 35
+      ) {
+        if (block.tempo > 0.25) {
+          block.tempo -= 0.25
+          block.size = block.tempo * 80
+        }
+      }
+
+      // 오른쪽 삼각형 클릭
+      if (
+        offsetX > block.x + block.size / 2 &&
+        offsetX < block.x + block.size / 2 + 20 &&
+        offsetY > block.y + 15 &&
+        offsetY < block.y + 35
+      ) {
+        block.tempo += 0.25
+        block.size = block.tempo * 80
+      }
+    }
+  })
 
   redraw()
 })
