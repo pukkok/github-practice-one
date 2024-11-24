@@ -22,9 +22,9 @@ playBtn.addEventListener('click', () => {
       if (idx >= createdItems.length) return
 
       const item = createdItems[idx]
-      currentNote = piano.play(item.pitch) // 새 음 재생
-      idx++
       const delay = item.tempo * 1000
+      currentNote = piano.play(item.pitch, ac.curretnTime, {duration : delay}) // 새 음 재생
+      idx++
       setTimeout(playNextNote, delay)
     }
 
