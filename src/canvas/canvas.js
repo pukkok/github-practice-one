@@ -35,10 +35,25 @@ const initialBoxes = notes.map((note, idx) => ({
   keySignature: null,
 }))
 
+const keySignature = [
+  {
+  x: startPoint + 0,
+  y: canvas.height / 2 + 80,
+  size: size,
+  noteName : "#", 
+  },
+  { 
+    x: startPoint + 50,
+    y: canvas.height / 2 + 80,
+    size: size,
+    noteName: "b" 
+  }
+]
+
 // 모든 박스를 다시 그리기
 function redraw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  [...initialBoxes, ...createdItems].forEach((note) => soundBlock(ctx, note, note.color))
+  [...initialBoxes, ...keySignature, ...createdItems].forEach((note) => soundBlock(ctx, note, note.color))
   dropBlockArea(ctx, dropArea)
 
   // 삼각형 표시
